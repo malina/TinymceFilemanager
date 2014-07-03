@@ -1,0 +1,44 @@
+.attachments-wrapper{"ng-if" => "showFiles", "ng-controller" => "attachmentsCtrl"}
+  .panel.panel-default{}
+    .toolbar.panel-heading.clearfix
+      .col-md-2
+        %form#form{:enctype => "multipart/form-data", :action =>"/manage/files", "method" => "post"}
+          .add-files
+            %label{:for => "files", :class=>""}
+              .btn.btn-default
+                %span{:class => "glyphicon glyphicon-cloud-upload"}
+              = t(:upload_files)
+            %input{:name => "file", :type => "file", :onchange => "angular.element(this).scope().sendFile(this);", "id" => "files", "class" => "form-control", "multiple"=>""}
+      .col-md-10
+        .btn-group
+          %button.btn.btn-default.dropdown-toggle{"data-toggle" => "dropdown", type: "button"}
+            Сортировать
+            %span.caret
+          %ul.dropdown-menu{role: "menu"}
+            %li
+              %a{"ng-click" => "predicate = 'file_filename'; reverse=!reverse"} Имя
+            %li
+              %a{"ng-click" => "predicate = 'c_at.date'; reverse=!reverse"} Дата
+            %li
+              %a{"ng-click" => "predicate = 'size'; reverse=!reverse"} Размер
+        .btn-group.pull-right
+          %input.form-control{type: "text", :placeholder=> "Фильтр", "ng-model" => "search"}/
+    .panel-body
+      = render 'tinymce_filemanager/home/units/leftmenu'       
+      .col-md-10
+        .attachments.items
+          .attachment.item{"ng-repeat" => "attachment in attachments | filter : search | orderBy:predicate:reverse"}
+            .text-row 
+              .name{"class" => "glyphicon glyphicon-file", "ng-click" => "showSizes = !showSizes;"} 
+                {{attachment.filename}}
+                %kbd.ext {{attachment.ext}}
+              .size {{attachment.size/(1024*1024) | number:3}} Мб
+              .date {{attachment.c_at | date: 'dd.MM.yyyy/hh:mm'}}
+              .window{"ng-if" => "showSizes"}
+                .inner.col-md-6.col-md-offset-3
+                  .form-group
+                    %label{} Текст ссылки 
+                    %input.form-control{:type => "text", "ng-model" => "link_text"}/ 
+                  .btn.btn-primary{"ng-click" => "single_insert(attachment.file.url, link_text)"} Вставить
+                  .btn.btn-danger{"ng-click" => "$parent.showSizes = !$parent.showSizes"} Отмена
+            .delete{"ng-click" => "delete(attachment)"} &times;

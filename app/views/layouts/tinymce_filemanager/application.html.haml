@@ -1,0 +1,8 @@
+!!!
+%html{'ng-app' => 'imageUploader'}
+  = render 'tinymce_filemanager/home/head'
+  %body
+    %main.image-browser{:role => "main"}
+      .container
+        .row
+          = yield

@@ -1,0 +1,57 @@
+.images-wrapper{"ng-if" => "!showFiles", "ng-controller" => "imagesCtrl"} 
+  .panel.panel-default{}
+    .toolbar.panel-heading.clearfix
+      .col-md-2
+        %form#form{:enctype => "multipart/form-data", :action =>"/manage/images", "method" => "post"}
+          .add-files
+            %label{:for => "files", :class=>""}
+              .btn.btn-default
+                %span{:class => "glyphicon glyphicon-cloud-upload"}
+              = t(:upload_files)
+            %input{:name => "file", :type => "file", :onchange => "angular.element(this).scope().sendFile(this);", "id" => "files", "class" => "form-control", "multiple"=>"", "accept" =>"image/jpeg,image/png,image/gif"}
+      .col-md-10
+        .btn-group
+          .btn.btn-default{"ng-click" => "tileView = true", "ng-class" => "{active: tileView}"}
+            %span{:class => "glyphicon glyphicon-th"} 
+          .btn.btn-default{"ng-click" => "tileView = false", "ng-class" => "{active: !tileView}"}
+            %span{:class => "glyphicon glyphicon-th-list"} 
+        .btn-group
+          %button.btn.btn-default.dropdown-toggle{"data-toggle" => "dropdown", type: "button"}
+            Сортировать
+            %span.caret
+          %ul.dropdown-menu{role: "menu"}
+            %li
+              %a{"ng-click" => "predicate = 'image_filename'; reverse=!reverse"} Имя
+            %li
+              %a{"ng-click" => "predicate = 'c_at'; reverse=!reverse"} Дата
+            %li
+              %a{"ng-click" => "predicate = 'size'; reverse=!reverse"} Размер
+        .btn-group.pull-right
+          %input.form-control{type: "text", :placeholder=> "Фильтр", "ng-model" => "search"}/
+    .panel-body
+      = render 'tinymce_filemanager/home/units/leftmenu'
+        
+      .col-md-10
+        .images.items{"ng-class" =>"{tiles : tileView}" }
+          .image.item{"ng-repeat" => "image in images | filter : search | orderBy:predicate:reverse"}
+            .delete{"ng-click" => "delete(image)"} &times;
+            %label.text-row{"ng-if" => "!tileView","ng-class" => "{checked : state}"} 
+              %input{:type => "checkbox","ng-model"=>"state", "ng-change"=>"to_inserted_images(image.image.url, state,image.image.thumb.url)","ng-class" => "{checked : state}"}/ 
+              .name{"class" => "glyphicon glyphicon-picture"} 
+                {{image.filename}}
+                %kbd.ext {{image.ext}}
+              .size {{image.size/(1024*1024) | number:3}} Мб
+              .date {{image.c_at | date: 'dd.MM.yyyy/hh:mm'}}
+            .tile{"ng-if" => "tileView"}
+              %img{"ng-src" => "{{image.image.thumb.url}}" , "ng-click" => "showSizes = !showSizes"}/ 
+              .delete{"ng-click" => "delete(image)"} &times;
+              .window{"ng-if" => "showSizes"}
+                .inner.col-md-6.col-md-offset-3
+                  .form-group
+                    %label{} Описание для фото 
+                    %input.form-control{:type => "text", "ng-model" => "alt_text"}/ 
+                  .btn.btn-primary{"ng-click" => "single_insert(image.image.url, alt_text,image.image.thumb.url)"} Вставить
+                  .btn.btn-danger{"ng-click" => "$parent.showSizes = !$parent.showSizes"} Отмена
+
+          .loading{"ng-repeat" => "ld in loading"}
+          .btn.btn-primary.pull-right{"ng-click" => "insert()", "ng-if" => "inserted_images.length != 0"} Вставить
